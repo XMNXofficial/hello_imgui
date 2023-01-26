@@ -1,7 +1,7 @@
 if (EMSCRIPTEN)
     cmake_minimum_required(VERSION 3.13) # emscripten uses target_link_options (cmake 3.13+)
 else()
-    cmake_minimum_required(VERSION 3.10)
+    cmake_minimum_required(VERSION 3.13)
 endif()
 if (IOS)
     set(DEPLOYMENT_TARGET "13.0" CACHE STRING "" FORCE)
@@ -29,6 +29,26 @@ option(HELLOIMGUI_WIN32_EXECUTABLE "Under windows, hello_imgui_add_app will crea
 #------------------------------------------------------------------------------
 # Options / Backend selection
 #------------------------------------------------------------------------------
+
+# If not backend option is selected, automatically fetch glfw and link it
+if (NOT HELLOIMGUI_WITH_GLFW
+    AND NOT HELLOIMGUI_WITH_SDL
+    AND NOT HELLOIMGUI_USE_SDL_OPENGL3
+    AND NOT HELLOIMGUI_USE_GLFW_OPENGL3
+    AND NOT HELLOIMGUI_USE_QT
+    )
+        set(HELLOIMGUI_WITH_GLFW ON CACHE BOOL "")
+        message(WARNING "
+            HelloImGui: using Glfw as default default backend (it will be downloaded and built inside {CMAKE_CURRENT_BINARY_DIR}/_deps/glfw-*)
+            In order to select your own backend, use either:
+                -DHELLOIMGUI_WITH_GLFW=ON            # To download and build glfw automatically
+                -DHELLOIMGUI_WITH_SDL=ON             # To download and build SDL automatically
+                -HELLOIMGUI_USE_GLFW_OPENGL3=ON      # To use your own version of GLFW (it should be findable via find_package(glfw3))
+                -HELLOIMGUI_USE_SDL_OPENGL3=ON       # To use your own version of SDL (it should be findable via find_package(SDL2))
+            ")
+endif()
+
+
 # Backend selection with automatic backend compilation
 # (if you set any of those options, the corresponding backend will be automatically downloaded at build time)
 option(HELLOIMGUI_WITH_GLFW "Add GLFW+OpenGl3 support (glfw will be automatically compiled via ExternalProject_Add)" OFF)
@@ -78,6 +98,7 @@ else()
     set(need_opengl_loader ON)
 endif()
 option(HELLOIMGUI_USE_GLAD "Use Glad OpenGl loader" ${need_opengl_loader})
+
 
 
 ###############################################################################
